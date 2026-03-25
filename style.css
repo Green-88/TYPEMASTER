@@ -88,31 +88,35 @@ select, button, input {
 }
 
 #display-text {
-  font-size: 22px;
-  line-height: 1.8;
+  font-size: 24px;
+  line-height: 2;
   padding: 20px;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   margin-bottom: 20px;
-  height: 150px;
-  overflow-y: auto;
+  height: 160px;
+  overflow-y: hidden;
   position: relative;
   white-space: pre-wrap;
   word-wrap: break-word;
+  scroll-behavior: smooth;
 }
 
-.char-correct { color: var(--success); }
-
-.char-wrong {
-  color: var(--danger);
-  background: rgba(231, 76, 60, 0.2);
+.char-correct { 
+  color: var(--success); 
 }
 
-.char-current {
-  background: var(--secondary);
-  color: white;
+.char-wrong { 
+  color: var(--danger); 
+  background: rgba(231, 76, 60, 0.2); 
+}
+
+.char-current { 
+  background: var(--secondary); 
+  color: white; 
   border-radius: 2px;
+  box-shadow: 0 0 5px var(--secondary);
 }
 
 #input-area {
@@ -139,19 +143,19 @@ select, button, input {
   font-weight: bold;
 }
 
-.history-section {
-  margin-top: 30px;
+.history-section { 
+  margin-top: 30px; 
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
 }
 
-th, td {
-  padding: 10px;
-  border-bottom: 1px solid var(--border);
-  text-align: center;
+th, td { 
+  padding: 10px; 
+  border-bottom: 1px solid var(--border); 
+  text-align: center; 
 }
 
 .theme-toggle {

@@ -32,6 +32,7 @@ let startTime = null;
 let timerInterval = null;
 let errors = 0;
 let timeLeft = 0;
+let lastOffsetTop = 0;
 
 const displayEl = document.getElementById("display-text");
 const inputEl = document.getElementById("input-area");
@@ -97,6 +98,8 @@ function applyWordLimit() {
 
 function renderText() {
   displayEl.innerHTML = targetText.split("").map(char => `<span>${char}</span>`).join("");
+  displayEl.scrollTop = 0;
+  lastOffsetTop = 0;
 }
 
 function resetSession() {
@@ -147,7 +150,14 @@ inputEl.addEventListener("input", () => {
       span.className = "";
       if (i === val.length) {
         span.className = "char-current";
-        if (i > 0) span.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        if (span.offsetTop !== lastOffsetTop) {
+          displayEl.scrollTo({
+            top: span.offsetTop - 60,
+            behavior: 'smooth'
+          });
+          lastOffsetTop = span.offsetTop;
+        }
       }
     } else if (typed === targetChars[i]) {
       span.className = "char-correct";

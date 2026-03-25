@@ -1,90 +1,94 @@
 <!doctype html>
 <html lang="hi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hindi Speed Typer - Pro Version</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hindi Speed Typer - Pro Version</title>
 
-<body data-theme="light">
-  <div class="container">
-    <div class="header-flex">
-      <h1>हिन्दी टाइपिंग मास्टर</h1>
-      <button class="theme-toggle" onclick="toggleTheme()">🌓 Theme</button>
-    </div>
+    <!-- CSS Link -->
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-    <div class="tabs">
-      <button id="btn-learn" class="tab-btn active" onclick="setMode('learning')">Learning Mode</button>
-      <button id="btn-practice" class="tab-btn" onclick="setMode('practicing')">Practicing Mode</button>
-    </div>
-
-    <div class="settings-grid">
-      <div class="setting-item">
-        <label>Level / स्तर</label>
-        <select id="level-select" onchange="setLevel(this.value)">
-          <option value="basic">Basic</option>
-          <option value="intermediate" selected>Intermediate</option>
-          <option value="advance">Advance</option>
-        </select>
+  <body data-theme="light">
+    <div class="container">
+      <div class="header-flex">
+        <h1>हिन्दी टाइपिंग मास्टर</h1>
+        <button class="theme-toggle" onclick="toggleTheme()">🌓 Theme</button>
       </div>
 
-      <div class="setting-item">
-        <label>Select Paragraph</label>
-        <select id="para-select" onchange="loadSpecificPara()"></select>
+      <div class="tabs">
+        <button id="btn-learn" class="tab-btn active" onclick="setMode('learning')">Learning Mode</button>
+        <button id="btn-practice" class="tab-btn" onclick="setMode('practicing')">Practicing Mode</button>
       </div>
 
-      <div class="setting-item">
-        <label>Time Limit</label>
-        <select id="time-select" onchange="resetSession()">
-          <option value="0">Unlimited</option>
-          <option value="300">5 Minutes</option>
-          <option value="600">10 Minutes</option>
-          <option value="900">15 Minutes</option>
-          <option value="1800">30 Minutes</option>
-        </select>
+      <div class="settings-grid">
+        <div class="setting-item">
+          <label>Level / स्तर</label>
+          <select id="level-select" onchange="setLevel(this.value)">
+            <option value="basic">Basic (वर्णमाला)</option>
+            <option value="intermediate" selected>Intermediate (वाक्य)</option>
+            <option value="advance">Advance (अनुच्छेद)</option>
+          </select>
+        </div>
+
+        <div class="setting-item">
+          <label>Select Paragraph</label>
+          <select id="para-select" onchange="loadSpecificPara()"></select>
+        </div>
+
+        <div class="setting-item">
+          <label>Time Limit</label>
+          <select id="time-select" onchange="resetSession()">
+            <option value="0">Unlimited</option>
+            <option value="300">5 Minutes</option>
+            <option value="600">10 Minutes</option>
+            <option value="900">15 Minutes</option>
+            <option value="1800">30 Minutes</option>
+          </select>
+        </div>
+
+        <div class="setting-item">
+          <label>Word Limit</label>
+          <input type="number" id="word-limit" placeholder="No limit" onchange="resetSession()">
+        </div>
+
+        <div class="setting-item">
+          <label>Backspace</label>
+          <select id="backspace-select">
+            <option value="on">Enabled</option>
+            <option value="off">Disabled</option>
+          </select>
+        </div>
       </div>
 
-      <div class="setting-item">
-        <label>Word Limit</label>
-        <input type="number" id="word-limit" placeholder="No limit" onchange="resetSession()">
+      <div id="display-text"></div>
+
+      <textarea id="input-area" placeholder="यहाँ टाइप करना शुरू करें..." autofocus></textarea>
+
+      <div class="stats-bar">
+        <div>WPM: <span id="wpm">0</span></div>
+        <div>Accuracy: <span id="accuracy">100</span>%</div>
+        <div>Time Left: <span id="timer">--</span></div>
       </div>
 
-      <div class="setting-item">
-        <label>Backspace</label>
-        <select id="backspace-select">
-          <option value="on">Enabled</option>
-          <option value="off">Disabled</option>
-        </select>
+      <div class="history-section">
+        <h3>आपका इतिहास (Progress History)</h3>
+        <table id="history-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Level</th>
+              <th>WPM</th>
+              <th>Accuracy</th>
+            </tr>
+          </thead>
+          <tbody id="history-body"></tbody>
+        </table>
+        <button style="margin-top: 10px; background: var(--danger); color: white" onclick="clearHistory()">Clear History</button>
       </div>
     </div>
 
-    <div id="display-text"></div>
-    <textarea id="input-area" placeholder="यहाँ टाइप करना शुरू करें..." autofocus></textarea>
-
-    <div class="stats-bar">
-      <div>WPM: <span id="wpm">0</span></div>
-      <div>Accuracy: <span id="accuracy">100</span>%</div>
-      <div>Time Left: <span id="timer">--</span></div>
-    </div>
-
-    <div class="history-section">
-      <h3>आपका इतिहास (Progress History)</h3>
-      <table id="history-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Level</th>
-            <th>WPM</th>
-            <th>Accuracy</th>
-          </tr>
-        </thead>
-        <tbody id="history-body"></tbody>
-      </table>
-      <button style="margin-top: 10px; background: var(--danger); color: white" onclick="clearHistory()">Clear History</button>
-    </div>
-  </div>
-
-  <script src="script.js"></script>
-</body>
+    <!-- JS Link -->
+    <script src="script.js"></script>
+  </body>
 </html>
