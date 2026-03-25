@@ -1,7 +1,7 @@
 
 ***
 
-# ⌨️ Hindi Speed Typer - Pro Version (हिन्दी टाइपिंग मास्टर)
+# ⌨️ HINDI TYPING MASTER - Pro Version (हिन्दी टाइपिंग मास्टर)
 
 A professional, feature-rich web application designed to help users master Hindi typing. Whether you are a beginner learning the Hindi alphabet or an advanced user preparing for government typing exams, this tool provides real-time feedback and progress tracking.
 
