@@ -5,87 +5,297 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hindi Speed Typer - Pro Version</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
     <!-- CSS Link -->
     <link rel="stylesheet" href="style.css" />
   </head>
 
   <body data-theme="light">
-    <div class="container">
-      <div class="header-flex">
-        <h1>हिन्दी टाइपिंग मास्टर</h1>
-        <button class="theme-toggle" onclick="toggleTheme()">🌓 Theme</button>
-      </div>
+    <div class="page-shell">
+      <section id="setup-screen" class="screen setup-screen">
+        <div class="setup-card setup-portal">
+          <div class="setup-head">
+            <p class="eyebrow">Hindi Typing Test Portal</p>
+            <h1>हिन्दी टाइपिंग मास्टर</h1>
+            <p class="setup-description">Professional setup for practice and exam-style typing sessions.</p>
+          </div>
 
-      <div class="tabs">
-        <button id="btn-learn" class="tab-btn active" onclick="setMode('learning')">Learning Mode</button>
-        <button id="btn-practice" class="tab-btn" onclick="setMode('practicing')">Practicing Mode</button>
-      </div>
+          <div class="setup-form">
+            <div class="setting-item full-row">
+              <label for="student-name">Enter Your Name</label>
+              <input id="student-name" type="text" placeholder="अपना नाम लिखें" />
+            </div>
 
-      <div class="settings-grid">
-        <div class="setting-item">
-          <label>Level / स्तर</label>
-          <select id="level-select" onchange="setLevel(this.value)">
-            <option value="basic">Basic (वर्णमाला)</option>
-            <option value="intermediate" selected>Intermediate (वाक्य)</option>
-            <option value="advance">Advance (अनुच्छेद)</option>
-          </select>
+            <div class="setting-item full-row">
+              <label>Select Mode</label>
+              <div class="mode-grid">
+                <button id="btn-practice" class="tab-btn active" onclick="setMode('practicing')">Practice Mode</button>
+                <button id="btn-exam" class="tab-btn" onclick="setMode('exam')">Exam Mode</button>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <label for="level-select">Select Level</label>
+              <select id="level-select" onchange="setLevel(this.value)">
+                <option value="basic">Beginner</option>
+                <option value="intermediate" selected>Intermediate</option>
+                <option value="advance">Advanced</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <label for="para-select">Select Paragraph</label>
+              <select id="para-select" onchange="loadSpecificPara()"></select>
+            </div>
+
+            <div class="setting-item">
+              <label for="time-select">Select Test Time</label>
+              <select id="time-select" onchange="resetSession()">
+                <option value="0">Unlimited</option>
+                <option value="120">2 Minutes</option>
+                <option value="300">5 Minutes</option>
+                <option value="600">10 Minutes</option>
+                <option value="900">15 Minutes</option>
+                <option value="1800">30 Minutes</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <label>Word Limit</label>
+              <div class="inline-switch-row">
+                <select id="word-limit-toggle">
+                  <option value="off">Disable</option>
+                  <option value="on">Enable</option>
+                </select>
+                <input type="number" id="word-limit" placeholder="No limit" onchange="resetSession()" />
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <label for="backspace-select">Backspace</label>
+              <select id="backspace-select">
+                <option value="on">Enabled</option>
+                <option value="off">Disabled</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <label for="highlight-select">Highlight Current Word</label>
+              <select id="highlight-select">
+                <option value="on">Enabled</option>
+                <option value="off">Disabled</option>
+              </select>
+            </div>
+
+            <div class="setting-item">
+              <label for="autoscroll-select">Auto Scroll</label>
+              <select id="autoscroll-select">
+                <option value="on">Enabled</option>
+                <option value="off">Disabled</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="setup-actions">
+            <button id="start-typing-btn" class="start-typing-btn practice-btn" onclick="setMode('practicing'); startTyping()">Start Practice Mode</button>
+            <button id="start-exam-btn" class="start-typing-btn exam-btn" onclick="setMode('exam'); startTyping()">Start Exam Mode</button>
+          </div>
         </div>
+      </section>
 
-        <div class="setting-item">
-          <label>Select Paragraph</label>
-          <select id="para-select" onchange="loadSpecificPara()"></select>
+      <section id="typing-screen" class="screen typing-screen is-hidden">
+        <div class="dashboard-shell">
+          <header class="topbar card-surface">
+            <div class="brand-block">
+              <div class="brand-mark">HT</div>
+              <div>
+                <p class="eyebrow">Professional Typing Test</p>
+                <h1>हिन्दी टाइपिंग मास्टर</h1>
+              </div>
+            </div>
+
+            <nav class="topbar-actions">
+              <button class="back-btn" type="button" onclick="window.scrollTo({ top: 0, behavior: 'smooth' }); backToHome()">Back</button>
+              <button class="icon-pill" type="button" aria-label="Profile">
+                <span class="avatar-dot"></span>
+              </button>
+              <button class="theme-toggle" onclick="toggleTheme()">🌓 Theme</button>
+            </nav>
+          </header>
+
+          <section class="stats-rail">
+            <article class="ring-card card-surface">
+              <div class="ring stat-ring" data-ring="wpm" style="--progress: 0">
+                <div class="ring-inner">
+                  <span class="ring-value" id="wpm">0</span>
+                  <span class="ring-label">Speed</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="ring-card card-surface">
+              <div class="ring stat-ring" data-ring="time" style="--progress: 0">
+                <div class="ring-inner">
+                  <span class="ring-value" id="timer">--</span>
+                  <span class="ring-label">Time Left</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="ring-card card-surface">
+              <div class="ring stat-ring" data-ring="accuracy" style="--progress: 100">
+                <div class="ring-inner">
+                  <span class="ring-value"><span id="accuracy">100</span>%</span>
+                  <span class="ring-label">Accuracy</span>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <div class="typing-layout">
+            <main class="typing-main">
+              <div class="content-card paragraph-card card-surface">
+                <div class="card-heading">
+                  <h2>Typing Paragraph</h2>
+                  <span class="card-subtitle">Read carefully and type the text as shown</span>
+                </div>
+                <div id="display-text" aria-label="Typing paragraph"></div>
+              </div>
+
+              <div class="content-card input-card card-surface">
+                <div class="card-heading">
+                  <h2>Typing Area</h2>
+                  <span class="card-subtitle">Use the toolbar to adjust typing appearance</span>
+                </div>
+                <textarea id="input-area" placeholder="यहाँ टाइप करना प्रारम्भ करें..." autofocus></textarea>
+
+                <div class="toolbar" aria-label="Typing toolbar">
+                  <button type="button" class="toolbar-btn" onclick="increaseFontSize()" title="Increase Font">A+</button>
+                  <button type="button" class="toolbar-btn" onclick="decreaseFontSize()" title="Decrease Font">A-</button>
+                  <button type="button" class="toolbar-btn" onclick="toggleBold()" title="Bold"><strong>B</strong></button>
+                  <button type="button" class="toolbar-btn" onclick="toggleItalic()" title="Italic"><em>I</em></button>
+                  <button type="button" class="toolbar-btn" onclick="resetFontStyle()" title="Reset Font">Reset</button>
+                  <button type="button" class="toolbar-btn toolbar-reset-btn" onclick="resetSession(true); showTyping();" title="Reset Test">Reset Test</button>
+                </div>
+              </div>
+            </main>
+          </div>
         </div>
+      </section>
 
-        <div class="setting-item">
-          <label>Time Limit</label>
-          <select id="time-select" onchange="resetSession()">
-            <option value="0">Unlimited</option>
-            <option value="300">5 Minutes</option>
-            <option value="600">10 Minutes</option>
-            <option value="900">15 Minutes</option>
-            <option value="1800">30 Minutes</option>
-          </select>
+      <section id="result-screen" class="screen result-screen is-hidden">
+        <div class="result-shell card-surface">
+          <header class="result-header">
+            <div>
+              <p class="eyebrow">Result Dashboard</p>
+              <h1>Test Completed</h1>
+            </div>
+            <span class="performance-badge" id="performance-badge">Excellent</span>
+          </header>
+
+          <div class="result-layout">
+            <div class="result-hero card-surface accent-surface">
+              <div class="result-ring ring stat-ring" data-ring="result-accuracy" style="--progress: 100">
+                <div class="ring-inner">
+                  <span class="ring-value" id="result-accuracy-value">100%</span>
+                  <span class="ring-label">Accuracy</span>
+                </div>
+              </div>
+
+              <div class="result-hero-copy">
+                <h2 id="result-message">Strong precision and steady pace.</h2>
+                <p id="result-grade">Typing Grade: A</p>
+                <div class="result-mini-stats">
+                  <div class="mini-stat">
+                    <span>Net Speed</span>
+                    <strong id="result-net-speed">0</strong>
+                  </div>
+                  <div class="mini-stat">
+                    <span>Gross Speed</span>
+                    <strong id="result-gross-speed">0</strong>
+                  </div>
+                  <div class="mini-stat">
+                    <span>Error Rate</span>
+                    <strong id="result-error-rate">0%</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="result-metrics-grid">
+              <div class="metric-card card-surface">
+                <span>Correct Words</span>
+                <strong id="result-correct-words">0</strong>
+              </div>
+              <div class="metric-card card-surface">
+                <span>Incorrect Words</span>
+                <strong id="result-incorrect-words">0</strong>
+              </div>
+              <div class="metric-card card-surface">
+                <span>Total Words</span>
+                <strong id="result-total-words">0</strong>
+              </div>
+              <div class="metric-card card-surface">
+                <span>Time Taken</span>
+                <strong id="result-time-taken">0</strong>
+              </div>
+              <div class="metric-card card-surface">
+                <span>WPM</span>
+                <strong id="result-wpm">0</strong>
+              </div>
+              <div class="metric-card card-surface">
+                <span>Percentage</span>
+                <strong id="result-percentage">0%</strong>
+              </div>
+              <div class="metric-card card-surface">
+                <span>Backspace Usage</span>
+                <strong id="result-backspace">0</strong>
+              </div>
+            </div>
+
+            <div class="result-actions">
+              <button type="button" class="primary-btn" onclick="retakeTest()">Retake Test</button>
+              <button type="button" class="secondary-btn" onclick="newParagraph()">New Paragraph</button>
+              <button type="button" class="secondary-btn" onclick="downloadResult()">Download Result</button>
+              <button type="button" class="ghost-btn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' }); backToHome()">Back to Home</button>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <div class="setting-item">
-          <label>Word Limit</label>
-          <input type="number" id="word-limit" placeholder="No limit" onchange="resetSession()">
+      <section class="history-section card-surface" id="progress-history">
+        <div class="card-heading history-heading">
+          <h2>Progress History</h2>
+          <span class="card-subtitle">Saved automatically after each completed test</span>
         </div>
-
-        <div class="setting-item">
-          <label>Backspace</label>
-          <select id="backspace-select">
-            <option value="on">Enabled</option>
-            <option value="off">Disabled</option>
-          </select>
+        <div class="history-table-wrap">
+          <table id="history-table">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>User Name</th>
+                <th>Mode</th>
+                <th>Level</th>
+                <th>Duration</th>
+                <th>WPM</th>
+                <th>Gross Speed</th>
+                <th>Net Speed</th>
+                <th>Accuracy</th>
+                <th>Correct Words</th>
+                <th>Incorrect Words</th>
+                <th>Total Words</th>
+                <th>Error Rate</th>
+                <th>Backspace Used</th>
+              </tr>
+            </thead>
+            <tbody id="history-body"></tbody>
+          </table>
         </div>
-      </div>
-
-      <div id="display-text"></div>
-
-      <textarea id="input-area" placeholder="यहाँ टाइप करना शुरू करें..." autofocus></textarea>
-
-      <div class="stats-bar">
-        <div>WPM: <span id="wpm">0</span></div>
-        <div>Accuracy: <span id="accuracy">100</span>%</div>
-        <div>Time Left: <span id="timer">--</span></div>
-      </div>
-
-      <div class="history-section">
-        <h3>आपका इतिहास (Progress History)</h3>
-        <table id="history-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Level</th>
-              <th>WPM</th>
-              <th>Accuracy</th>
-            </tr>
-          </thead>
-          <tbody id="history-body"></tbody>
-        </table>
-        <button style="margin-top: 10px; background: var(--danger); color: white" onclick="clearHistory()">Clear History</button>
-      </div>
+        <button class="danger-btn history-clear-btn" onclick="clearHistory()">Clear History</button>
+      </section>
     </div>
 
     <!-- JS Link -->

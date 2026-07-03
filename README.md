@@ -20,23 +20,26 @@ A professional, feature-rich web application designed to help users master Hindi
 *   **Advance (अनुच्छेद):** High-difficulty paragraphs for expert-level speed.
 
 ### 2. 🛠 Professional Controls
-*   **Learning vs. Practicing Modes:** Toggle between a relaxed learning environment and a strict practice session.
-*   **Custom Limits:** Set specific **Time Limits** (5 to 30 mins) or **Word Limits**.
+*   **Practice & Exam Modes:** Choose between flexible Practice Mode or strict Exam Mode (2 min, Advanced level, backspace disabled).
+*   **User Name Tracking:** Enter your name before each test for personalized progress tracking.
+*   **Custom Limits:** Set specific **Time Limits** (5 to 30 mins) or **Word Limits** in Practice Mode.
 *   **Backspace Toggle:** Option to disable backspace to simulate real-world examination environments.
 *   **Paragraph Selection:** Choose specific paragraphs or practice with random text.
 
-### 3. 📊 Real-time Analytics
-*   **WPM (Words Per Minute):** Standard calculation (5 characters = 1 word).
-*   **Accuracy:** Real-time percentage tracking.
+### 3. 📊 Real-time Analytics & Detailed Metrics
+*   **WPM (Words Per Minute):** Gross and Net Speed calculations (5 characters = 1 word).
+*   **Accuracy & Error Rate:** Real-time percentage tracking with detailed breakdown.
+*   **Detailed Stats:** Correct Words, Incorrect Words, Total Words, Backspace Usage.
 *   **Visual Feedback:**
     *   <span style="color: #27ae60">Green</span>: Correct character.
     *   <span style="color: #e74c3c">Red</span>: Wrong character.
     *   <span style="background: #3498db">Blue Highlight</span>: Current position.
 
-### 4. 🌙 Modern UI/UX
+### 4. 🌙 Modern UI/UX & Progress Tracking
 *   **Dark/Light Mode:** Toggle between themes for comfortable typing at night.
 *   **Auto-Scroll:** The display text automatically scrolls as you type.
-*   **Progress History:** Saves your last 5 sessions locally using `LocalStorage`.
+*   **Responsive Design:** Optimized layout for Chrome 100% zoom on desktop without scrolling.
+*   **Progress History:** Saves your last 10 sessions locally using `LocalStorage` with User Name, Mode, Speed metrics, and detailed statistics.
 
 ## 🛠 Tech Stack
 *   **HTML5:** Semantic structure.
@@ -60,10 +63,12 @@ A professional, feature-rich web application designed to help users master Hindi
     Simply double-click `index.html` in your browser. No server setup required!
 
 ## 📝 How it Works
-1.  **Select Level:** Choose between Basic, Intermediate, or Advance.
-2.  **Configure:** Set your time/word limits and Backspace preference.
-3.  **Type:** Start typing in the text area. The timer starts automatically on the first keystroke.
-4.  **Analyze:** View your WPM and Accuracy immediately upon finishing.
+1.  **Enter Your Name:** Personalize your test record for history tracking.
+2.  **Select Mode:** Choose Practice Mode (flexible settings) or Exam Mode (fixed: 2 min, Advanced level, no backspace).
+3.  **Configure:** In Practice Mode, set your level, time/word limits, and Backspace preference.
+4.  **Type:** Start typing in the text area. The timer starts automatically on the first keystroke.
+5.  **Analyze:** View your Gross Speed, Net Speed, Accuracy, and Error Rate immediately upon finishing.
+6.  **Review History:** Check your last 10 tests with full metrics and your entered name in the history table at the bottom.
 
 ## 🤝 Contributing
 Contributions are welcome! If you have better Hindi paragraphs or new feature ideas:

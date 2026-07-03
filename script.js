@@ -25,7 +25,7 @@ const content = {
   ]
 };
 
-let currentMode = "learning";
+let currentMode = "practicing";
 let currentLevel = "intermediate";
 let targetText = "";
 let startTime = null;
@@ -33,17 +33,95 @@ let timerInterval = null;
 let errors = 0;
 let timeLeft = 0;
 let lastOffsetTop = 0;
+let initialTimeLimit = 0;
+let typingFontSize = 20;
+let typingFontWeight = "400";
+let typingFontStyle = "normal";
+let currentWordIndex = 0;
+let backspaceCount = 0;
+let correctWordsCount = 0;
+let incorrectWordsCount = 0;
+let totalWordsCount = 0;
 
 const displayEl = document.getElementById("display-text");
 const inputEl = document.getElementById("input-area");
 const wpmEl = document.getElementById("wpm");
 const accuracyEl = document.getElementById("accuracy");
 const timerEl = document.getElementById("timer");
+const setupScreenEl = document.getElementById("setup-screen");
+const typingScreenEl = document.getElementById("typing-screen");
+const resultScreenEl = document.getElementById("result-screen");
 
 function init() {
   populateParaSelect();
   resetSession();
   updateHistoryTable();
+  applyTypingFontStyle();
+  updateRings();
+}
+
+function startTyping() {
+  resetSession(true);
+  showScreen("typing");
+  inputEl.disabled = false;
+  inputEl.focus();
+}
+
+function showScreen(screenName) {
+  const screens = [setupScreenEl, typingScreenEl, resultScreenEl];
+
+  screens.forEach((screen) => {
+    screen.classList.remove("is-visible");
+    screen.classList.add("is-hidden");
+  });
+
+  const activeScreen =
+    screenName === "typing" ? typingScreenEl : screenName === "result" ? resultScreenEl : setupScreenEl;
+
+  activeScreen.classList.remove("is-hidden");
+  activeScreen.classList.add("is-visible");
+  document.body.classList.add("body-ready");
+}
+
+function showSetup() {
+  showScreen("setup");
+}
+
+function showTyping() {
+  showScreen("typing");
+}
+
+function applyTypingFontStyle() {
+  inputEl.style.fontSize = `${typingFontSize}px`;
+  inputEl.style.fontWeight = typingFontWeight;
+  inputEl.style.fontStyle = typingFontStyle;
+}
+
+function increaseFontSize() {
+  typingFontSize = Math.min(30, typingFontSize + 2);
+  applyTypingFontStyle();
+}
+
+function decreaseFontSize() {
+  typingFontSize = Math.max(16, typingFontSize - 2);
+  applyTypingFontStyle();
+}
+
+function toggleBold() {
+  typingFontWeight = typingFontWeight === "700" ? "400" : "700";
+  applyTypingFontStyle();
+}
+
+function toggleItalic() {
+  typingFontStyle = typingFontStyle === "italic" ? "normal" : "italic";
+  applyTypingFontStyle();
+}
+
+function resetFontStyle() {
+  typingFontSize = 20;
+  typingFontWeight = "400";
+  typingFontStyle = "normal";
+  applyTypingFontStyle();
 }
 
 function toggleTheme() {
@@ -54,8 +132,32 @@ function toggleTheme() {
 
 function setMode(mode) {
   currentMode = mode;
-  document.getElementById('btn-learn').classList.toggle('active', mode === 'learning');
   document.getElementById('btn-practice').classList.toggle('active', mode === 'practicing');
+  const examButton = document.getElementById('btn-exam');
+  if (examButton) {
+    examButton.classList.toggle('active', mode === 'exam');
+  }
+
+  const backspaceSelect = document.getElementById('backspace-select');
+  const timeSelect = document.getElementById('time-select');
+  const levelSelect = document.getElementById('level-select');
+
+  if (mode === 'exam') {
+    if (backspaceSelect) {
+      backspaceSelect.value = 'off';
+      backspaceSelect.disabled = true;
+    }
+    if (timeSelect) {
+      timeSelect.value = '120';
+    }
+    if (levelSelect) {
+      levelSelect.value = 'advance';
+    }
+    currentLevel = 'advance';
+    populateParaSelect();
+  } else if (backspaceSelect) {
+    backspaceSelect.disabled = false;
+  }
   resetSession();
 }
 
@@ -102,19 +204,34 @@ function renderText() {
   lastOffsetTop = 0;
 }
 
-function resetSession() {
+function resetSession(forceFreshParagraph = false) {
   clearInterval(timerInterval);
   startTime = null;
   errors = 0;
+  currentWordIndex = 0;
+  backspaceCount = 0;
+  correctWordsCount = 0;
+  incorrectWordsCount = 0;
+  totalWordsCount = 0;
   inputEl.value = "";
+  inputEl.disabled = false;
   wpmEl.innerText = "0";
   accuracyEl.innerText = "100";
 
   const selectedTime = parseInt(document.getElementById('time-select').value);
   timeLeft = selectedTime;
+  initialTimeLimit = selectedTime;
   timerEl.innerText = selectedTime > 0 ? formatTime(timeLeft) : "--";
 
+  if (forceFreshParagraph) {
+    const paraSelect = document.getElementById('para-select');
+    if (paraSelect) {
+      paraSelect.value = 'random';
+    }
+  }
+
   loadSpecificPara();
+  updateRings();
 }
 
 function formatTime(s) {
@@ -126,6 +243,11 @@ function formatTime(s) {
 inputEl.addEventListener('keydown', (e) => {
   if (document.getElementById('backspace-select').value === 'off' && e.key === 'Backspace') {
     e.preventDefault();
+    return;
+  }
+
+  if (e.key === 'Backspace' && document.getElementById('backspace-select').value === 'on') {
+    backspaceCount += 1;
   }
 });
 
@@ -133,6 +255,7 @@ inputEl.addEventListener("input", () => {
   const val = inputEl.value;
   const targetChars = targetText.split("");
   const spans = displayEl.querySelectorAll("span");
+  currentWordIndex = val.length;
 
   if (!startTime && val.length > 0) {
     startTime = new Date();
@@ -169,6 +292,7 @@ inputEl.addEventListener("input", () => {
 
   const accuracy = Math.max(0, Math.round(((val.length - errors) / val.length) * 100)) || 100;
   accuracyEl.innerText = accuracy;
+  updateRings();
 
   if (val.length >= targetText.length) finishSession();
 });
@@ -177,6 +301,7 @@ function updateTimer() {
   timeLeft--;
   timerEl.innerText = formatTime(timeLeft);
   updateStatsOnly();
+  updateRings();
   if (timeLeft <= 0) finishSession();
 }
 
@@ -186,24 +311,193 @@ function updateStatsOnly() {
   if (timeElapsed > 0) {
     wpmEl.innerText = Math.round(words / timeElapsed);
   }
+  updateRings();
 }
 
 function finishSession() {
   clearInterval(timerInterval);
-  if (currentMode === "practicing") {
-    saveHistory(wpmEl.innerText, accuracyEl.innerText);
-  }
-  alert(`Test Complete!\nWPM: ${wpmEl.innerText}\nAccuracy: ${accuracyEl.innerText}%`);
-  resetSession();
+  inputEl.disabled = true;
+  const summary = buildResultSummary();
+  saveHistory(summary);
+  showResultDashboard(summary);
 }
 
-function saveHistory(wpm, acc) {
+function buildResultSummary() {
+  const elapsedSeconds = startTime ? Math.max(1, Math.round((new Date() - startTime) / 1000)) : 0;
+  const typedText = inputEl.value.trim();
+  const typedWords = typedText ? typedText.split(/\s+/) : [];
+  const targetWords = targetText.trim() ? targetText.trim().split(/\s+/) : [];
+  const totalWords = targetWords.length;
+
+  let correctWords = 0;
+  for (let index = 0; index < totalWords; index += 1) {
+    if (typedWords[index] && typedWords[index] === targetWords[index]) {
+      correctWords += 1;
+    }
+  }
+
+  const incorrectWords = Math.max(0, totalWords - correctWords) + Math.max(0, typedWords.length - totalWords);
+  const accuracy = parseInt(accuracyEl.innerText, 10) || 100;
+  const minutesElapsed = elapsedSeconds / 60;
+  const grossSpeed = minutesElapsed > 0 ? Math.round(typedWords.length / minutesElapsed) : 0;
+  const netSpeed = Math.max(0, Math.round(grossSpeed * (accuracy / 100)));
+  const errorRate = totalWords > 0 ? Math.round((incorrectWords / totalWords) * 100) : 0;
+  const percentage = accuracy;
+  const typingGrade = getTypingGrade(accuracy, netSpeed);
+  const performanceMessage = getPerformanceMessage(accuracy, netSpeed);
+  const backspaceUsage = document.getElementById('backspace-select').value === 'off'
+    ? 'No (Disabled)'
+    : `${backspaceCount}`;
+
+  correctWordsCount = correctWords;
+  incorrectWordsCount = incorrectWords;
+  totalWordsCount = totalWords;
+
+  return {
+    netSpeed,
+    grossSpeed,
+    accuracy,
+    correctWords,
+    incorrectWords,
+    totalWords,
+    errorRate,
+    timeTaken: formatElapsedTime(elapsedSeconds),
+    wpm: parseInt(wpmEl.innerText, 10) || 0,
+    percentage,
+    typingGrade,
+    performanceMessage,
+    backspaceUsage,
+    modeLabel: currentMode === 'practicing' ? 'Practice' : currentMode === 'exam' ? 'Exam' : 'Practice',
+  };
+}
+
+function getTypingGrade(accuracy, netSpeed) {
+  if (accuracy >= 98 && netSpeed >= 70) return "A+";
+  if (accuracy >= 94 && netSpeed >= 55) return "A";
+  if (accuracy >= 88 && netSpeed >= 40) return "B";
+  return "C";
+}
+
+function getPerformanceMessage(accuracy, netSpeed) {
+  if (accuracy >= 98 && netSpeed >= 70) return "Outstanding control and exam-ready speed.";
+  if (accuracy >= 94 && netSpeed >= 55) return "Excellent balance of speed and precision.";
+  if (accuracy >= 88 && netSpeed >= 40) return "Solid performance with room to improve pace.";
+  return "Focus on accuracy first, then build speed gradually.";
+}
+
+function formatElapsedTime(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+function showResultDashboard(summary) {
+  document.getElementById("result-net-speed").innerText = summary.netSpeed;
+  document.getElementById("result-gross-speed").innerText = summary.grossSpeed;
+  document.getElementById("result-correct-words").innerText = summary.correctWords;
+  document.getElementById("result-incorrect-words").innerText = summary.incorrectWords;
+  document.getElementById("result-total-words").innerText = summary.totalWords;
+  document.getElementById("result-error-rate").innerText = `${summary.errorRate}%`;
+  document.getElementById("result-time-taken").innerText = summary.timeTaken;
+  document.getElementById("result-wpm").innerText = summary.wpm;
+  document.getElementById("result-percentage").innerText = `${summary.percentage}%`;
+  const backspaceValueEl = document.getElementById("result-backspace");
+  if (backspaceValueEl) {
+    backspaceValueEl.innerText = summary.backspaceUsage;
+  }
+  document.getElementById("result-grade").innerText = `Typing Grade: ${summary.typingGrade}`;
+  document.getElementById("result-message").innerText = summary.performanceMessage;
+  document.getElementById("result-accuracy-value").innerText = `${summary.accuracy}%`;
+  document.getElementById("performance-badge").innerText = summary.typingGrade;
+  setRingProgress("result-accuracy", summary.accuracy);
+  showScreen("result");
+  requestAnimationFrame(() => {
+    resultScreenEl.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+}
+
+function updateRings() {
+  const currentAccuracy = parseInt(accuracyEl.innerText, 10) || 0;
+  const currentWpm = parseInt(wpmEl.innerText, 10) || 0;
+  const speedProgress = Math.min(100, Math.round((currentWpm / 120) * 100));
+  const timeProgress = initialTimeLimit > 0 ? Math.max(0, Math.round((timeLeft / initialTimeLimit) * 100)) : 0;
+
+  setRingProgress("wpm", speedProgress);
+  setRingProgress("time", timeProgress);
+  setRingProgress("accuracy", currentAccuracy);
+}
+
+function setRingProgress(ringName, progressValue) {
+  const ringElement = document.querySelector(`[data-ring="${ringName}"]`);
+  if (!ringElement) return;
+  ringElement.style.setProperty("--progress", Math.max(0, Math.min(100, progressValue)));
+}
+
+function retakeTest() {
+  resetSession(true);
+  showTyping();
+  inputEl.focus();
+}
+
+function newParagraph() {
+  document.getElementById('para-select').value = 'random';
+  resetSession(true);
+  showTyping();
+  inputEl.focus();
+}
+
+function backToHome() {
+  clearInterval(timerInterval);
+  inputEl.disabled = false;
+  showSetup();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function downloadResult() {
+  const summary = buildResultSummary();
+  const report = [
+    "Hindi Typing Master Result",
+    `Net Speed: ${summary.netSpeed}`,
+    `Gross Speed: ${summary.grossSpeed}`,
+    `Accuracy: ${summary.accuracy}%`,
+    `Correct Words: ${summary.correctWords}`,
+    `Incorrect Words: ${summary.incorrectWords}`,
+    `Total Words: ${summary.totalWords}`,
+    `Error Rate: ${summary.errorRate}%`,
+    `Time Taken: ${summary.timeTaken}`,
+    `WPM: ${summary.wpm}`,
+    `Percentage: ${summary.percentage}%`,
+    `Grade: ${summary.typingGrade}`,
+    `Message: ${summary.performanceMessage}`,
+  ].join("\n");
+
+  const blob = new Blob([report], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "hindi-typing-result.txt";
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+function saveHistory(summary) {
+  const userName = document.getElementById('student-name').value.trim() || 'Anonymous';
   const history = JSON.parse(localStorage.getItem("hindi_typing_history") || "[]");
   history.push({
-    date: new Date().toLocaleDateString(),
+    userName: userName,
+    date: new Date().toLocaleString(),
+    mode: summary.modeLabel,
     level: currentLevel,
-    wpm: wpm,
-    acc: acc,
+    duration: summary.timeTaken,
+    wpm: summary.wpm,
+    grossSpeed: summary.grossSpeed,
+    netSpeed: summary.netSpeed,
+    acc: summary.accuracy,
+    correctWords: summary.correctWords,
+    incorrectWords: summary.incorrectWords,
+    totalWords: summary.totalWords,
+    errorRate: summary.errorRate,
+    backspaceUsed: summary.backspaceUsage,
   });
   localStorage.setItem("hindi_typing_history", JSON.stringify(history));
   updateHistoryTable();
@@ -211,12 +505,22 @@ function saveHistory(wpm, acc) {
 
 function updateHistoryTable() {
   const history = JSON.parse(localStorage.getItem("hindi_typing_history") || "[]");
-  document.getElementById('history-body').innerHTML = history.reverse().slice(0, 5).map(row => `
+  document.getElementById('history-body').innerHTML = history.reverse().slice(0, 10).map(row => `
     <tr>
       <td>${row.date}</td>
+      <td>${row.userName || 'Anonymous'}</td>
+      <td>${row.mode || 'Practice'}</td>
       <td>${row.level.toUpperCase()}</td>
+      <td>${row.duration || '--'}</td>
       <td>${row.wpm}</td>
+      <td>${row.grossSpeed ?? '--'}</td>
+      <td>${row.netSpeed ?? '--'}</td>
       <td>${row.acc}%</td>
+      <td>${row.correctWords ?? 0}</td>
+      <td>${row.incorrectWords ?? 0}</td>
+      <td>${row.totalWords ?? 0}</td>
+      <td>${row.errorRate ?? '--'}%</td>
+      <td>${row.backspaceUsed || '0'}</td>
     </tr>
   `).join("");
 }
@@ -227,3 +531,5 @@ function clearHistory() {
 }
 
 init();
+
+document.getElementById("setup-screen").classList.add("is-visible");
